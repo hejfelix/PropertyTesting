@@ -1,32 +1,27 @@
-import org.scalacheck.{Arbitrary, Gen}
-import org.scalatest.{FlatSpec, Matchers}
-import org.scalatest.prop.PropertyChecks
-import Gen._
-import Arbitrary.arbitrary
+import org.scalacheck.Arbitrary.arbitrary
+import org.scalacheck.Gen.{const, frequency}
+import org.scalacheck.Prop.{classify, forAll}
+import org.scalacheck.{Arbitrary, Gen, Prop}
+import org.scalatest.prop.GeneratorDrivenPropertyChecks
+import org.scalatest.{Matchers, PropSpec}
 
-import scala.util.parsing.combinator.RegexParsers
+class MyListSpec extends PropSpec with GeneratorDrivenPropertyChecks with Matchers {
 
-class MyListSpec extends FlatSpec with PropertyChecks with Matchers with RegexParsers {
+  def genEmpty = const(MyNil)
 
-  private def genEmpty = const(MyNil)
-
-  private def genMyCons: Gen[MyList[Int]] =
+  def genMyCons: Gen[MyList[Int]] =
     for {
       head <- arbitrary[Int]
       tail <- frequency((10, genMyCons), (1, genEmpty))
     } yield MyCons(head, tail)
 
-  implicit def arbMyList = Arbitrary(genMyCons)
+  implicit def arbMyList =
+    Arbitrary(Gen.frequency((1, genEmpty), (10, genMyCons)))
 
-  "rev rev " should "be identity" in {
-    forAll { list: MyList[Int] =>
-      list.reverse.reverse shouldBe list
-    }
-  }
-
-  "concat" should "have greater or equal length" in {
-    forAll { (a: MyList[Int], b: MyList[Int]) =>
-      a.concat(b).length should be >= a.length
+  property("Reversing twice is identity") {
+    forAll { xs: MyList[Int] =>
+      println(xs)
+      xs.reverse.reverse == xs
     }
   }
 
