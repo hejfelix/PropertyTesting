@@ -2,7 +2,7 @@ import scala.util.parsing.combinator.RegexParsers
 
 case class Email(user: String, domain: String)
 
-class EmailParser extends RegexParsers {
+case class EmailParser() extends RegexParsers {
 
   val letter: Parser[String]      = """[a-zA-Z]""".r
   val digit: Parser[String]       = """[0-9]""".r

@@ -2,32 +2,48 @@ import org.scalatest.prop.PropertyChecks
 import org.scalatest.{FlatSpec, Matchers}
 
 import scala.util.parsing.combinator.RegexParsers
+import org.scalacheck.Gen
 
 class EmailParserSpec extends FlatSpec with PropertyChecks with Matchers with RegexParsers {
 
-  "EmailParser" should "parse simple e-mails" in
-  {
+  val nonEmptyAlphaStr = for {
+    initial <- Gen.alphaChar
+    tail    <- Gen.alphaStr
+  } yield initial + tail
 
-    val parser: EmailParser = new EmailParser()
+  val domainGenerator = for {
+    domainStart <- nonEmptyAlphaStr
+    domainEnd   <- nonEmptyAlphaStr
+  } yield s"$domainStart.$domainEnd"
 
-    parser.parseString(parser.user, "hejfelix") should matchPattern
-    {
-      case parser.Success("hejfelix", _) =>
+  val emailGenerator: Gen[String] = for {
+    name   <- nonEmptyAlphaStr
+    domain <- domainGenerator
+  } yield s"$name@$domain"
+
+  val parser = EmailParser()
+
+  "EmailParser" should "parse simple user parts" in {
+    forAll(nonEmptyAlphaStr) { user =>
+      parser.parseString(parser.user, user) should matchPattern {
+        case parser.Success(`user`, _) =>
+      }
     }
+  }
 
-    parser.parseString(parser.domain, "gmail.com") should matchPattern
-    {
-      case parser.Success("gmail.com", _) =>
+  "EmailParser" should "parse simple domains" in {
+    forAll(domainGenerator) { domain =>
+      parser.parseString(parser.domain, domain) should matchPattern {
+        case parser.Success(`domain`, _) =>
+      }
     }
+  }
 
-    parser.parseString(parser.domain, "com") should matchPattern
-    {
-      case parser.Success("com", _) =>
-    }
-
-    parser.parseString(parser.email, "hejfelix@gmail.com") should matchPattern
-    {
-      case parser.Success(Email("hejfelix", "gmail.com"), _) =>
+  "EmailParser" should "parse simple e-mails" in {
+    forAll(emailGenerator) { email =>
+      parser.parseString(parser.email, email) should matchPattern {
+        case parser.Success(Email(_, _), _) =>
+      }
     }
 
   }
