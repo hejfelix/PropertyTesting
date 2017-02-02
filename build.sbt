@@ -1,4 +1,4 @@
-scalaVersion := "2.11.8"
+scalaVersion := "2.12.1"
 
 libraryDependencies += "org.scalacheck" %% "scalacheck" % "1.13.4" % "compile"
 libraryDependencies += "org.scalatest" %% "scalatest" % "3.0.1" % "compile"

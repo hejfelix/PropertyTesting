@@ -13,10 +13,12 @@ object Naturals {
       case Zero    => acc
     }
 
-  def fromInt(i: Int, acc: Natural = Zero): Natural = i match {
+  private def fromInt(i: Int, acc: Natural): Natural = i match {
     case 0 => acc
     case i => fromInt(i - 1, Succ(acc))
   }
+
+  def fromInt(i: Int): Natural = fromInt(i, Zero)
 
   def isEven(natural: Natural): Boolean = natural match {
     case Zero     => true

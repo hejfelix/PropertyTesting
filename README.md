@@ -3,10 +3,14 @@ Introduction to property based testing
 
 ## Running
 
-On MacOS / Linux:
+On MacOS / Linux / Windows:
 
-```./gradlew test```
+```
+sbt test
+```
 
-On Windows:
+## REPL
 
-```./gradlew.bat test```
+```
+sbt test:console
+```

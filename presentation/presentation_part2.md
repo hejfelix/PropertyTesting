@@ -38,7 +38,7 @@ in root of this repo
 
 # Generators
 
-## choose
+## Gen.choose
 
 ```scala
 scala> import org.scalacheck.Gen
@@ -60,7 +60,7 @@ scala> range.sample
 res3: Option[Int] = Some(73)
 ```
 
-## oneOf
+## Gen.oneOf
 
 ```scala
 scala> val vowel = Gen.oneOf('A', 'E', 'I', 'O', 'U', 'Y')
@@ -76,22 +76,37 @@ scala> vowel.sample
 res2: Option[Char] = Some(A)
 ```
 
+## Gen.frequency
+```scala
+val randomLanguage =
+  Gen
+    .frequency(
+      (10, "Scala"),
+      (1, "Java"),
+      (1, "Groovy"),
+      (1, "JavaScript") )
+
+val langs =
+  List.fill(30) (randomLanguage.sample)
+  .map(_.get)
+  .mkString(", ")
+
+println(langs)
+//Scala, Scala, Scala, Scala, Scala, Scala, Scala, Java, Scala, Scala, Scala, Scala, Scala, Scala, Scala, Scala, Scala, Java, Scala, Scala, Scala, Scala, Groovy, Scala, Scala, Scala, JavaScript, Scala, Scala, Groovy
+```
+
+
 ## Arbitrary generators
 
 ```scala
-scala> import org.scalacheck.Arbitrary
 import org.scalacheck.Arbitrary
-
-scala> import org.scalacheck.Gen
 import org.scalacheck.Gen
 
-scala> case class MyBool(b: Boolean)
-defined class MyBool
+case class MyBool(b: Boolean)
 
-scala> implicit val arbMyBool: Arbitrary[MyBool] = Arbitrary {
+implicit val arbMyBool: Arbitrary[MyBool] = Arbitrary {
    Gen.oneOf( MyBool(false), MyBool(true ) ) )
- }
-arbMyBool: org.scalacheck.Arbitrary[MyBool] = org.scalacheck.ArbitraryLowPriority$$anon$1@3087340e
+}
 ```
 
 ## Using arbitrary Generators
@@ -104,7 +119,7 @@ scala> Arbitrary.arbitrary[MyBool].sample
 res5: Option[MyBool] = Some(MyBool(false))
 ```
 
-## Combine Generators
+## Compose Generators
 ```scala
 val min = 1
 val max = 50000
@@ -112,7 +127,7 @@ val max = 50000
 def zeroGen = const(Zero)
 
 def nonZeroGen: Gen[Natural] =
-  choose(min, max) map { case n => Naturals.fromInt(n) }
+  choose(min, max).map(Naturals.fromInt)
 
 implicit def arbNatural: Arbitrary[Natural] = Arbitrary(
   Gen.oneOf(zeroGen, nonZeroGen) // ScalaTest has a different `oneOf`!
@@ -122,11 +137,15 @@ implicit def arbNatural: Arbitrary[Natural] = Arbitrary(
 ## Monadic composition
 
 ```scala
+val genLeaf = const(Leaf)
+
 val genNode = for {
   v <- arbitrary[Int]
   left <- genTree
   right <- genTree
 } yield Node(left, right, v)
+
+def genTree: Gen[Tree] = oneOf(genLeaf, genNode)
 ```
 
 ## Properties
@@ -134,7 +153,6 @@ val genNode = for {
 ```scala
 property("Even plus 1 is odd, odd plus 1 is even") {
   forAll { (n: Natural) =>
-    println(s"n: $n")
     Naturals.isEven(n) == !Naturals.isEven(Succ(n))
   }
 }

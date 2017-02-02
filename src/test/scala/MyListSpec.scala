@@ -20,7 +20,6 @@ class MyListSpec extends PropSpec with GeneratorDrivenPropertyChecks with Matche
 
   property("Reversing twice is identity") {
     forAll { xs: MyList[Int] =>
-      println(xs)
       xs.reverse.reverse == xs
     }
   }

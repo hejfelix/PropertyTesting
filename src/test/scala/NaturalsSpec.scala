@@ -15,8 +15,7 @@ class NaturalsSpec extends PropSpec with GeneratorDrivenPropertyChecks with Matc
 
   def zeroGen = const(Zero)
 
-  def nonZeroGen: Gen[Natural] =
-    choose(min, max) map { case n => Naturals.fromInt(n) }
+  def nonZeroGen: Gen[Natural] = choose(min, max) map Naturals.fromInt
 
   implicit def arbNatural: Arbitrary[Natural] = Arbitrary(
     Gen.oneOf(zeroGen, nonZeroGen) // ScalaTest has a different `oneOf`!
@@ -27,7 +26,6 @@ class NaturalsSpec extends PropSpec with GeneratorDrivenPropertyChecks with Matc
     */
   property("Even plus 1 is odd, odd plus 1 is even") {
     forAll { (n: Natural) =>
-      println(s"n: $n")
       Naturals.isEven(n) == !Naturals.isEven(Succ(n))
     }
   }
